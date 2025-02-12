@@ -1,6 +1,7 @@
 ﻿using Amazon;
 using Amazon.S3;
 using Amazon.S3.Transfer;
+using Internal_API.models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -13,7 +14,7 @@ namespace Internal_API.Services.Implementation
         private IAmazonS3 _s3Client;
         private IConfiguration configuration;
 
-        async Task<string> IS3Service.uploadfile(IFormFile file, string filename)
+        async Task<string> IS3Service.UploadFileAsync(S3FileInfo fileInfo)
         {
             string? _bucketName = configuration["AWS:BucketName"];
             if (string.IsNullOrEmpty(_bucketName))
@@ -25,21 +26,31 @@ namespace Internal_API.Services.Implementation
 
             try
             {
-                var fileTransferUtility = new TransferUtility(_s3Client);
-                await fileTransferUtility.UploadAsync(file.OpenReadStream(), _bucketName, filename);
+                if (fileInfo.File == null || fileInfo.File.Length == 0)
+                    throw new ArgumentException("Invalid file");
 
-                return "file uploaded successfully";
+                using var memoryStream = new MemoryStream();
+                await fileInfo.File.CopyToAsync(memoryStream);
+
+                var uploadRequest = new TransferUtilityUploadRequest
+                {
+                    InputStream = memoryStream,
+                    Key = $"{fileInfo.Year}/{fileInfo.UserInfo}/{fileInfo.FileName}",
+                    BucketName = _bucketName,
+                    ContentType = fileInfo.Type
+                };
+
+                var transferUtility = new TransferUtility(_s3Client);
+                await transferUtility.UploadAsync(uploadRequest);
+
+                return $"File uploaded successfully: {uploadRequest.Key}";
             }
             catch (Exception ex)
             {
-                throw new Exception("Error uploading file to S3", ex);
                 return "file failed";
+                throw new Exception("Error uploading file to S3", ex);
+                
             }
-        }
-
-        bool IS3Service.VerifyIdentity()
-        {
-            return true;
         }
     }
 }
