@@ -26,18 +26,18 @@ namespace Internal_API.Services.Implementation
 
             try
             {
-                if (fileInfo.File == null || fileInfo.File.Length == 0)
+                if (fileInfo.file == null || fileInfo.file.Length == 0)
                     throw new ArgumentException("Invalid file");
 
                 using var memoryStream = new MemoryStream();
-                await fileInfo.File.CopyToAsync(memoryStream);
+                await fileInfo.file.CopyToAsync(memoryStream);
 
                 var uploadRequest = new TransferUtilityUploadRequest
                 {
                     InputStream = memoryStream,
-                    Key = $"{fileInfo.Year}/{fileInfo.UserInfo}/{fileInfo.FileName}",
+                    Key = $"{fileInfo.year}/{fileInfo.userInfo}/{fileInfo.fileName}",
                     BucketName = _bucketName,
-                    ContentType = fileInfo.Type
+                    ContentType = fileInfo.type
                 };
 
                 var transferUtility = new TransferUtility(_s3Client);
