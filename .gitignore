@@ -1,0 +1,54 @@
+# Ignore Visual Studio and .NET build artifacts
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/
+.vscode/
+*.csproj.user
+
+# Ignore compiled DLLs and executables
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+
+# Ignore NuGet and package artifacts
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+nuget.lock
+# If using global NuGet cache (optional)
+.nuget/
+
+# Ignore environment and secrets
+.env
+secrets.json
+appsettings.Development.json
+
+# Ignore Docker files and logs
+docker-compose.override.yml
+**/docker-compose.*.override.yml
+Dockerfile
+.dockerignore
+**/logs/
+*.pid
+
+# Ignore Rider / JetBrains files
+.idea/
+*.iml
+
+# Ignore temporary files
+*.swp
+*.swo
+*.sln.ide
+*.db
+
+# Ignore generated API documentation
+api-docs/
+swagger/
+*.xml
