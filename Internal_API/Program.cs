@@ -10,7 +10,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddScoped<IS3Service, S3ServiceImp>();
+
 
 var app = builder.Build();
 
