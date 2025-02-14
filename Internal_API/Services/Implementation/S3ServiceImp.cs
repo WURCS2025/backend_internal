@@ -1,13 +1,8 @@
-﻿using Amazon;
+﻿
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Transfer;
 using Internal_API.models;
-using Microsoft.Extensions.Configuration;
-using System;
-using System.IO;
-using System.Net.Mime;
-using System.Threading.Tasks;
+using Internal_API.constants;
 
 namespace Internal_API.Services.Implementation
 {
@@ -28,7 +23,9 @@ namespace Internal_API.Services.Implementation
             else if (!string.IsNullOrEmpty(_bucketName))
             {
                 var region = Amazon.RegionEndpoint.GetBySystemName(configuration["AWS:Region"]);
-                _s3Client = new AmazonS3Client(region); // Uses default AWS credentials
+                var accessKey = configuration["AWS:AccessKey"];
+                var secretKey = configuration["AWS:SecretKey"];
+                _s3Client = new AmazonS3Client(accessKey, secretKey, region);
             }
             
         }
@@ -69,7 +66,7 @@ namespace Internal_API.Services.Implementation
                     BucketName = _bucketName,
                     Key = $"{fileInfo.year}/{fileInfo.type}/{fileInfo.fileName}",
                     InputStream = memoryStream,
-                    ContentType = fileInfo.type
+                    ContentType = MimeTypes.Text,
                 };
 
                 await _s3Client.PutObjectAsync(putRequest);

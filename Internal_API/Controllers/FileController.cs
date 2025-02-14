@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Internal_API.Services;
 using Internal_API.models;
+using Internal_API.Services.Implementation;
+using Microsoft.Extensions.Configuration;
+using Amazon.S3;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,10 +14,16 @@ namespace Internal_API.Controllers
     public class S3FileController : ControllerBase
     {
         private readonly IS3Service _s3FileService;
+        private readonly IConfiguration _configuration;
 
-        public S3FileController(IS3Service s3FileService)
+        public S3FileController(IConfiguration configuration)
         {
-            _s3FileService = s3FileService;
+            _configuration = configuration;
+            var region = Amazon.RegionEndpoint.GetBySystemName(configuration["AWS:Region"]);
+            var accessKey = configuration["AWS:AccessKey"];
+            var secretKey = configuration["AWS:SecretKey"];
+            IAmazonS3 _s3Client = new AmazonS3Client(accessKey, secretKey, region);
+            _s3FileService = new S3ServiceImp(configuration, _s3Client);
         }
 
         [HttpPost("upload")]
