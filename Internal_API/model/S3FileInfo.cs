@@ -7,6 +7,9 @@
         public string type { get; set; }     // File type (e.g., image/png)
         public string userInfo { get; set; } // User-related metadata
         public int year { get; set; }        // Associated year
+        public string category { get; set; }
+
+        public string S3Key { get; set; }
     }
 
 }

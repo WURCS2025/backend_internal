@@ -48,28 +48,18 @@ namespace Internal_API.Services.Implementation
                 await fileInfo.file.CopyToAsync(memoryStream);
                 string timestring = DateTime.Now.ToShortTimeString();
 
-                //var uploadRequest = new TransferUtilityUploadRequest
-                //{
-                //    InputStream = memoryStream,
-                //    Key = $"{fileInfo.year}/{fileInfo.type}/{fileInfo.fileName}/{timestring}",
-                //    BucketName = _bucketName,
-                //    ContentType = fileInfo.type
-                //};
 
-                //var transferUtility = new TransferUtility(_s3Client);
-                //await transferUtility.UploadAsync(uploadRequest);
-
-                //return $"File uploaded successfully: {uploadRequest.Key}";
 
                 var putRequest = new PutObjectRequest
                 {
                     BucketName = _bucketName,
-                    Key = $"{fileInfo.year}/{fileInfo.type}/{fileInfo.fileName}",
+                    Key = $"{fileInfo.year}/{fileInfo.category}/{timestring}-{fileInfo.fileName}",
                     InputStream = memoryStream,
                     ContentType = MimeTypes.Text,
                 };
 
                 await _s3Client.PutObjectAsync(putRequest);
+                fileInfo.S3Key = putRequest.Key;
                 return $"File uploaded successfully: {putRequest.Key}";
             }
             catch (Exception ex)
