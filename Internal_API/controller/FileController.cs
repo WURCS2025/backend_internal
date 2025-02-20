@@ -37,8 +37,8 @@ namespace Internal_API.Controllers
                 var temp = fileInfo.fileName;
                 fileInfo.fileName = fileInfo.file.FileName;
                 var result = await _s3FileService.UploadFileAsync(fileInfo);
-                this.fileUploadDao.SaveFileUpload(fileInfo);
-                return Ok(new { Message = result });
+                var id = this.fileUploadDao.SaveFileUpload(fileInfo);
+                return Ok(new { Message = result  + "file id = " + id });
             }
             catch (Exception ex)
             {
