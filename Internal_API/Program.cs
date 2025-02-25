@@ -1,6 +1,9 @@
 using Amazon.S3;
+using Internal_API.dao;
 using Internal_API.data;
 using Internal_API.models;
+using Internal_API.service;
+using Internal_API.service.Implementation;
 using Internal_API.Services;
 using Internal_API.Services.Implementation;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +11,9 @@ using System.Diagnostics.CodeAnalysis;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+//// Force the application to use the specified ports
+//builder.WebHost.UseUrls("http://+:8082", "https://+:8083");
 
 // Add services to the container.
 
@@ -22,8 +28,25 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAWSService<IAmazonS3>();
 builder.Services.AddScoped<IS3Service, S3ServiceImp>();
 builder.Services.AddScoped<IFileUploadDao, FileUploadDao>();
+builder.Services.AddScoped<IUserInfoDao, UserInfoDao>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenServiceImp>();
+
+// ? Step 1: Define the CORS Policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.AllowAnyOrigin()   // Allow requests from any domain
+              .AllowAnyMethod()   // Allow all HTTP methods (GET, POST, etc.)
+              .AllowAnyHeader();  // Allow all headers
+    });
+});
+
+// ? Step 2: Enable CORS Before Mapping Controllers
 
 var app = builder.Build();
+
+app.UseCors("AllowAllOrigins");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

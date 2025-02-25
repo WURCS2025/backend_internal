@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  myapp:
+    image: interal_api  # Uses the Docker image built from Dockerfile
+    container_name: interal_api  # Optional: Assigns a name to the container
+    build:
+      context: .  # The directory where the Dockerfile is located
+      dockerfile: Dockerfile  # Ensure it points to the correct Dockerfile
+    ports:
+      - "8080:8080"  # Maps host port 8080 to container port 8080 (HTTP)
+      - "8081:8081"  # Maps host port 8081 to container port 8081 (HTTPS)
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080;https://+:8081  # Ensures the app listens on correct ports
+    restart: unless-stopped  # Ensures the container restarts if it stops

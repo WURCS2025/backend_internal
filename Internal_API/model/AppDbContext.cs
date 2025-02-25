@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Internal_API.model;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Internal_API.models
@@ -12,6 +13,7 @@ namespace Internal_API.models
         }
 
         public virtual DbSet<FileUpload> FileUploads { get; set; }
+        public virtual DbSet<UserInfo> UserInfo { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

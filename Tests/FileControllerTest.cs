@@ -1,16 +1,10 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿
 using Moq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using Amazon.S3;
 using Internal_API.Controllers;
 using Internal_API.models;
 using Internal_API.Services;
-using Internal_API.data;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Internal_API.constants;
 
 namespace Internal_API.Tests
