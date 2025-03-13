@@ -12,10 +12,10 @@ namespace Internal_API.controller
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserInfoDao userInfoDao;
+        private readonly IUserInfoDao userInfoDao;
         private readonly IJwtTokenService _jwtService;
 
-        public AuthController(UserInfoDao userInfoDao, IJwtTokenService jwtService)
+        public AuthController(IUserInfoDao userInfoDao, IJwtTokenService jwtService)
         {
             this.userInfoDao = userInfoDao;
             _jwtService = jwtService;
@@ -24,20 +24,49 @@ namespace Internal_API.controller
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserInfo user)
         {
-            var existingUser = await userInfoDao.GetUserByUsernameAsync(user.Username);
+            var existingUser = await userInfoDao.GetUserByUsernameAsync(user.username);
             if (existingUser != null)
                 return BadRequest("Username already exists");
 
-            user.PasswordHash = PasswordHelper.HashPassword(user.PasswordHash);
+            user.passwordhash = PasswordHelper.HashPassword(user.passwordhash);
             await userInfoDao.CreateUserAsync(user);
             return Ok("User registered successfully");
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserInfo user)
+        [HttpPost("chgpwd")]
+        public async Task<IActionResult> ChangePwd([FromBody] UpdateLogin login)
         {
-            if (await userInfoDao.VerifyUserPassword(user))
+            if (!await userInfoDao.VerifyUserPassword(login))
             {
+                return Unauthorized("Invalid credentials");
+            }
+            else
+            {
+                if (login.newPwd.Equals(login.confirmPwd))
+                {
+                    var existingUser = await userInfoDao.GetUserByUsernameAsync(login.username);
+
+                    existingUser.passwordhash = login.newPwd.HashPassword();
+
+                    await userInfoDao.UpdateUserAsync(existingUser);
+
+                    return Ok("Password updated successfully");
+                }
+                else
+                {
+                    return BadRequest("Passwords aren't the same");
+                }               
+                
+                
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] Login login)
+        {
+            if (await userInfoDao.VerifyUserPassword(login))
+            {
+                var user = await userInfoDao.GetUserByUsernameAsync(login.username);
                 var token = _jwtService.GenerateToken(user);
                 return Ok(new { Token = token });
             }

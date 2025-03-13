@@ -9,5 +9,7 @@ namespace Internal_API.Services
         FileUpload? GetUploadById(Guid id);
 
         IList<FileUpload> GetListUploadsByYear(int year);
+
+        IList<FileUpload> GetListUploadByUser(string user);
     }
 }

@@ -29,8 +29,8 @@ namespace Internal_API.Tests
             // Arrange
             var user = new UserInfo
             {
-                Username = "testuser",
-                Email = "testuser@example.com"
+                username = "testuser",
+                email = "testuser@example.com"
             };
 
             // Act

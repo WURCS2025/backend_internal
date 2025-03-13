@@ -3,27 +3,30 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Internal_API.model
 {
+    [Table("UserInfo")]
     public class UserInfo
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid Id { get; set; }
+        public Guid id { get; set; }
 
         [Required]
-        public string FirstName { get; set; }
+        public string firstname { get; set; }
 
         [Required]
-        public string LastName { get; set; }
+        public string lastname { get; set; }
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string email { get; set; }
 
         [Required]
-        public string Username { get; set; }
+        public string username { get; set; }
 
         [Required]
-        public string PasswordHash { get; set; }
+        public string passwordhash { get; set; }
+
+        public DateTime createdate { get; set; }
     }
 
 }

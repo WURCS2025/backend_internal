@@ -9,6 +9,8 @@ namespace Internal_API.service
 
         Task<UserInfo> GetUserByUsernameAsync(string username);
 
-        Task<Boolean> VerifyUserPassword(UserInfo user);
+        Task<Boolean> VerifyUserPassword(Login user);
+
+        Task UpdateUserAsync(UserInfo user);
     }
 }

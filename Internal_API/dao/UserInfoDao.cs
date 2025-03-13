@@ -8,38 +8,45 @@ namespace Internal_API.dao
 {
     public class UserInfoDao : IUserInfoDao
     {
-        private readonly AppDbContext _context;
+        private readonly AppDbContext dbcontext;
 
         public UserInfoDao(AppDbContext context)
         {
-            _context = context;
+            dbcontext = context;
         }
         public async Task CreateUserAsync(UserInfo user)
         {
-            await _context.UserInfo.AddAsync(user);
-            await _context.SaveChangesAsync();
+            await dbcontext.UserInfo.AddAsync(user);
+            await dbcontext.SaveChangesAsync();
+
+        }
+
+        public async Task UpdateUserAsync(UserInfo user)
+        {
+            dbcontext.UserInfo.Update(user);
+            await dbcontext.SaveChangesAsync();
         }
 
         public async Task DeleteUserAsync(UserInfo user)
         {
-            var delUser = _context.UserInfo.Where(a => a.Id == user.Id).FirstOrDefault();
+            var delUser = dbcontext.UserInfo.Where(a => a.id == user.id).FirstOrDefault();
             if (delUser != null)
             {
-                _context.UserInfo.Remove(delUser);
-                await _context.SaveChangesAsync();
+                dbcontext.UserInfo.Remove(delUser);
+                await dbcontext.SaveChangesAsync();
             }
         }
 
         public async Task<UserInfo?> GetUserByUsernameAsync(string username)
         {
-            return await _context.UserInfo.FirstOrDefaultAsync(a=>a.Username == username);
+            return await dbcontext.UserInfo.FirstOrDefaultAsync(a=>a.username == username);
         }
 
-        public async Task<bool> VerifyUserPassword(UserInfo user)
+        public async Task<bool> VerifyUserPassword(Login user)
         {
-            var existingUser = await GetUserByUsernameAsync(user.Username);
+            var existingUser = await GetUserByUsernameAsync(user.username);
 
-            if (existingUser == null || !PasswordHelper.VerifyPassword(user.PasswordHash, existingUser.PasswordHash))
+            if (existingUser == null || !PasswordHelper.VerifyPassword(user.password, existingUser.passwordhash))
                 return false;
 
             return true;

@@ -29,6 +29,11 @@ namespace Internal_API.data
             return result;
         }
 
+        public IList<FileUpload> GetListUploadByUser(string user)
+        {
+            return dbContext.FileUploads.Where(a=>a.userinfo == user).ToList();
+        }
+
         public Guid SaveFileUpload(S3FileInfo fileInfo)
         {
             FileUpload upload = new FileUpload();

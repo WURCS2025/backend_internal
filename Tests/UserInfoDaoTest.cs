@@ -5,7 +5,6 @@ using Internal_API.dao;
 using Internal_API.model;
 using Internal_API.utility;
 using Microsoft.EntityFrameworkCore;
-
 using Internal_API.models;
 using MockQueryable.Moq;
 using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
@@ -31,9 +30,9 @@ namespace Internal_API.Tests
             var storedhash = passwordNotHashed.HashPassword();
             userInfoList = new List<UserInfo>
         {
-            new UserInfo { Id = new Guid(), Username = "testuser1", PasswordHash = "hashedpassword1" },
-            new UserInfo { Id = new Guid(), Username = "testuser2", PasswordHash = "hashedpassword2" },
-            new UserInfo { Id = new Guid(), Username = "testuser3", PasswordHash = storedhash }
+            new UserInfo { id = new Guid(), username = "testuser1", passwordhash = "hashedpassword1" },
+            new UserInfo { id = new Guid(), username = "testuser2", passwordhash = "hashedpassword2" },
+            new UserInfo { id = new Guid(), username = "testuser3", passwordhash = storedhash }
         };
 
             mockDbSet = userInfoList.AsQueryable().BuildMockDbSet();
@@ -54,7 +53,7 @@ namespace Internal_API.Tests
         public async Task CreateUserAsync_ValidUser_AddsUserToDatabase()
         {
             // Arrange
-            var user = new UserInfo { Id = new Guid(), Username = "testuser3", PasswordHash = "hashedpassword3" };
+            var user = new UserInfo { id = new Guid(), username = "testuser3", passwordhash = "hashedpassword3" };
 
             // Act
             await userInfoDao.CreateUserAsync(user);
@@ -68,7 +67,7 @@ namespace Internal_API.Tests
         public async Task DeleteUserAsync_ExistingUser_RemovesUserFromDatabase()
         {
             // Arrange
-            var user = new UserInfo { Id = new Guid(), Username = "testuser" };
+            var user = new UserInfo { id = new Guid(), username = "testuser" };
             var users = new List<UserInfo> { user }.AsQueryable();
             mockDbSet.As<IQueryable<UserInfo>>().Setup(m => m.Provider).Returns(users.Provider);
             mockDbSet.As<IQueryable<UserInfo>>().Setup(m => m.Expression).Returns(users.Expression);
@@ -86,30 +85,21 @@ namespace Internal_API.Tests
         [TestMethod]
         public async Task GetUserByUsernameAsync_ExistingUser_ReturnsUser()
         {
-
-    //        var options = new DbContextOptionsBuilder<AppDbContext>().UseInMemoryDatabase(databaseName: "TestDb")  // In-memory database
-    //.Options;
-
-    //        AppDbContext _context = new AppDbContext(options);
-    //        UserInfoDao _userInfoDao = new UserInfoDao(_context);
-
-    //        var testUser = new UserInfo { Id = new Guid(), Username = "testuser1", PasswordHash = "hashedpassword" };
-    //        await _context.UserInfo.AddAsync(testUser);
-    //        await _context.SaveChangesAsync();
+  
 
             // Act
             var result = await userInfoDao.GetUserByUsernameAsync("testuser1");
 
             // Assert
             Assert.IsNotNull(result);
-            Assert.AreEqual("testuser1", result.Username);
+            Assert.AreEqual("testuser1", result.username);
         }
 
         [TestMethod]
         public async Task VerifyUserPassword_CorrectPassword_ReturnsTrue()
         {           
 
-            UserInfo user = new UserInfo { Username = "testuser3", PasswordHash = passwordNotHashed };
+            Login user = new Login { username = "testuser3", password = passwordNotHashed };
             // Act
             var result = await userInfoDao.VerifyUserPassword(user);
 
