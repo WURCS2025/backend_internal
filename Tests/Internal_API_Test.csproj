@@ -17,6 +17,7 @@
     <PackageReference Include="ClamAV.Net" Version="0.1.166" />
     <PackageReference Include="ClamNet.Client" Version="0.1.10" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.3.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.2" />

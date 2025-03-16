@@ -27,7 +27,7 @@ namespace Internal_API.models
         public string? category { get; set; }
 
         [MaxLength(50)]
-        public string? type { get; set; }
+        public string? filetype { get; set; }
 
         [Required]
         [MaxLength(500)]

@@ -4,9 +4,9 @@ namespace Internal_API.constants
 {
     public enum FileStatus
     {
-        pending_uploading,
+        processing,
         uploaded,
-        pending_ETL,
-
+        completed,
+        error,
     }
 }

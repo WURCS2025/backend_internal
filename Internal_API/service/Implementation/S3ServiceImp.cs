@@ -3,6 +3,7 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Internal_API.models;
 using Internal_API.constants;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Internal_API.Services.Implementation
 {
@@ -70,6 +71,28 @@ namespace Internal_API.Services.Implementation
             }
         }
 
-        
+        public async Task<GetObjectResponse> GetFileAsync(string s3key)
+        {            
+
+            if (string.IsNullOrEmpty(_bucketName))
+            {
+                throw new Exception("No bucket name");
+            }
+
+            try
+            {
+                var file = await _s3Client.GetObjectAsync(_bucketName, s3key);
+                return file;
+            }
+            catch(Exception ex)
+            {
+                Console.Write("error in retrieving file: " + s3key);
+                throw new Exception(ex.ToString());
+            }
+
+          
+        }
+
+
     }
 }

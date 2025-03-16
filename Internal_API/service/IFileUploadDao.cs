@@ -11,5 +11,7 @@ namespace Internal_API.Services
         IList<FileUpload> GetListUploadsByYear(int year);
 
         IList<FileUpload> GetListUploadByUser(string user);
+
+        IQueryable<FileUpload> getQuery();
     }
 }

@@ -2,12 +2,10 @@
 using Internal_API.Services;
 using Internal_API.models;
 using Internal_API.Services.Implementation;
-using Microsoft.Extensions.Configuration;
 using Amazon.S3;
-using Internal_API.data;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
-using System.Collections;
+using Internal_API.model;
+using Internal_API.constants;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -56,6 +54,51 @@ namespace Internal_API.Controllers
             
         }
 
+        [HttpGet("download")]
+        public async Task<IActionResult> GetFileAsync(string fileId)
+        {
+            // Retrieve the S3 key from your database using the fileId
+           
+
+            if (string.IsNullOrEmpty(fileId))
+                return NotFound("File not found.");
+
+            if (Guid.TryParse(fileId, out Guid fileGuiID))
+            {
+                Console.WriteLine($"Valid GUID: {fileId}");
+            }
+            else
+            {
+                return NotFound("Invalid GUID format. {fileId}");
+            }
+
+            var record = fileUploadDao.GetUploadById(fileGuiID);
+
+            if (record is null)
+            {
+                return NotFound("No file associated with file id: {fileId}");
+            }
+            else
+            {
+                
+                try
+                {
+                    var s3Object = await s3FileService.GetFileAsync(record.s3_key);
+                    var stream = s3Object.ResponseStream;
+                    var contentType = s3Object.Headers.ContentType ?? "application/octet-stream";
+
+                    return new FileStreamResult(stream, contentType)
+                    {
+                        FileDownloadName = record.filename // This will set the Content-Disposition header automatically
+                    };
+                }
+                catch (AmazonS3Exception ex)
+                {
+                    return BadRequest($"Error retrieving file from S3: {ex.Message}");
+                }
+            }
+        }
+
         [HttpGet("year")]
         public IList<FileUpload> GetFilesByYear(int year)
         {
@@ -71,5 +114,48 @@ namespace Internal_API.Controllers
             return uploadList;
         }
 
+        [HttpPost("filter")]
+        public async Task<IList<FileUpload>> GetFilteredFiles([FromBody] FileFilterRequest filter)
+        {
+            if (filter == null)
+            {
+                return null;
+            }
+
+            var query = fileUploadDao.getQuery();
+            
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(filter.userid))
+                query = query.Where(f => f.userinfo == filter.userid);
+
+            if (!string.IsNullOrEmpty(filter.year) && !filter.year.ToLower().Contains("all") && int.TryParse(filter.year, out int myear))
+                query = query.Where(f => f.year == myear);
+
+            if (!string.IsNullOrEmpty(filter.category) && !filter.category.ToLower().Contains("all"))
+                query = query.Where(f => f.category == filter.category);
+
+            if (!string.IsNullOrEmpty(filter.filetype) && !filter.filetype.ToLower().Contains("all"))
+                query = query.Where(f => f.filetype == filter.filetype);
+
+            if (!string.IsNullOrEmpty(filter.status) &&
+                Enum.TryParse<FileStatus>(filter.status, true, out var fileStatus) && !filter.status.ToLower().Contains("all"))
+            {
+                query = query.Where(f => f.status == fileStatus);
+            }
+
+            // Apply sorting
+            if (!string.IsNullOrEmpty(filter.sortfield) && !string.IsNullOrEmpty(filter.sortorder))
+            {
+                query = filter.sortorder.ToLower() == "desc"
+                    ? query.OrderByDescending(e => EF.Property<object>(e, filter.sortfield))
+                    : query.OrderBy(e => EF.Property<object>(e, filter.sortfield));
+            }
+
+            var result = await query.ToListAsync();
+            return result;
+        }
     }
+
 }
+

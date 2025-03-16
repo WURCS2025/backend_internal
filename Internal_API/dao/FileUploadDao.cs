@@ -15,6 +15,12 @@ namespace Internal_API.data
             dbContext = context;
         }
 
+        public IQueryable<FileUpload> getQuery()
+        {
+            var query = dbContext.FileUploads.AsQueryable();
+            return query;
+        }
+
         public IList<FileUpload> GetListUploadsByYear(int year)
         {
             
@@ -43,6 +49,7 @@ namespace Internal_API.data
             upload.status = FileStatus.uploaded;
             upload.userinfo = fileInfo.userInfo;
             upload.year = fileInfo.year;
+            upload.filetype = fileInfo.filetype;
             upload.message = "uploading completed";
             dbContext.FileUploads.Add(upload);
             dbContext.SaveChanges();
