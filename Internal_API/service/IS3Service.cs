@@ -9,6 +9,8 @@ namespace Internal_API.Services
         Task<string> UploadFileAsync(S3FileInfo fileInfo);
 
         Task<GetObjectResponse> GetFileAsync(string s3key);
+        Task DeleteFileAsync(string s3Key);
+
     }
 }
 

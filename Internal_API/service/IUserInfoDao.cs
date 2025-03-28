@@ -1,4 +1,5 @@
 ﻿using Internal_API.model;
+using Internal_API.models;
 
 namespace Internal_API.service
 {
@@ -12,5 +13,11 @@ namespace Internal_API.service
         Task<Boolean> VerifyUserPassword(Login user);
 
         Task UpdateUserAsync(UserInfo user);
+
+        void DeleteUser(string username);
+
+        Task<IList<UserInfo>> GetUserList();
+
+        IQueryable<UserInfo> getQuery();
     }
 }

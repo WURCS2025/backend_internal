@@ -20,7 +20,8 @@ namespace Internal_API.service.Implementation
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.username),
-                new Claim(ClaimTypes.Email, user.email)
+                new Claim(ClaimTypes.Email, user.email),
+                new Claim(ClaimTypes.Role, user.userrole)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

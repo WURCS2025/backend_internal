@@ -13,5 +13,11 @@ namespace Internal_API.Services
         IList<FileUpload> GetListUploadByUser(string user);
 
         IQueryable<FileUpload> getQuery();
+
+        IList<FileUpload> GetFileUploadsWithUserInfo();
+
+        void DeleteFileUpload(Guid fileId);
+
+
     }
 }
