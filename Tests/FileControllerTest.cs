@@ -6,6 +6,8 @@ using Internal_API.Controllers;
 using Internal_API.models;
 using Internal_API.Services;
 using Internal_API.constants;
+using Internal_API.dao;
+using Internal_API.service;
 
 namespace Internal_API.Tests
 {
@@ -15,6 +17,7 @@ namespace Internal_API.Tests
         private Mock<IFileUploadDao> _mockFileUploadDao;
         private Mock<IConfiguration> _mockConfiguration;
         private S3FileController _controller;
+        private Mock<IUserInfoDao> _mockUserInfoDao;
 
         [TestInitialize]
         public void Setup()
@@ -27,9 +30,10 @@ namespace Internal_API.Tests
 
             // Mock File Upload DAO
             _mockFileUploadDao = new Mock<IFileUploadDao>();
+            _mockUserInfoDao = new Mock<IUserInfoDao>();
 
             // Initialize Controller with Mocked Dependencies
-            _controller = new S3FileController(_mockConfiguration.Object, _mockFileUploadDao.Object);
+            _controller = new S3FileController(_mockConfiguration.Object, _mockFileUploadDao.Object, _mockUserInfoDao.Object);
         }
 
         // ✅ TEST: UploadFile should return 200 OK on success

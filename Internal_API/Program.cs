@@ -1,4 +1,4 @@
-using Amazon.S3;
+﻿using Amazon.S3;
 using Internal_API.dao;
 using Internal_API.data;
 using Internal_API.models;
@@ -7,7 +7,8 @@ using Internal_API.service.Implementation;
 using Internal_API.Services;
 using Internal_API.Services.Implementation;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics.CodeAnalysis;
+using Amazon.SimpleNotificationService;
+using Amazon.SQS;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,11 @@ builder.Services.AddScoped<IS3Service, S3ServiceImp>();
 builder.Services.AddScoped<IFileUploadDao, FileUploadDao>();
 builder.Services.AddScoped<IUserInfoDao, UserInfoDao>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenServiceImp>();
+builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
+builder.Services.AddAWSService<IAmazonSQS>();
+builder.Services.AddSingleton<IMessagePushService, MessagePushServiceImpl>(); // Your SSE message broker
+builder.Services.AddHostedService<SqsPollingService>(); // ✅ This starts the polling service
+
 
 // ? Step 1: Define the CORS Policy
 builder.Services.AddCors(options =>

@@ -128,8 +128,6 @@ namespace Internal_API.Controllers
             var query = fileUploadDao.getQuery();
             var userquery = userInfoDao.getQuery();
 
-
-
             // Apply filters
             if (!string.IsNullOrEmpty(filter.userid))
             {

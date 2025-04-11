@@ -8,6 +8,10 @@ namespace Internal_API.models
     {
         const string connectionString = "Host=192.168.12.167;Port=5433;Database=postgres;Username=postgres;Password=password";
 
+        public AppDbContext()
+        {
+        }
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }

@@ -11,9 +11,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.7.402" />
+    <PackageReference Include="Amazon.CDK.AWS.SNS" Version="1.204.0" />
+    <PackageReference Include="Amazon.CDK.AWS.SNS.Subscriptions" Version="1.204.0" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.402.33" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.414.4" />
     <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.401.43" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="3.7.400.127" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.400.125" />
     <PackageReference Include="ClamAV.Net" Version="0.1.166" />
     <PackageReference Include="ClamNet.Client" Version="0.1.10" />
     <PackageReference Include="coverlet.collector" Version="6.0.0" />

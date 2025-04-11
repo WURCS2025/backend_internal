@@ -16,6 +16,8 @@ namespace Internal_API.Services
 
         IList<FileUpload> GetFileUploadsWithUserInfo();
 
+        Task saveChanges();
+
         void DeleteFileUpload(Guid fileId);
 
 

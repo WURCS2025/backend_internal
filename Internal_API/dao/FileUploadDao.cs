@@ -2,6 +2,7 @@
 using Internal_API.models;
 using Internal_API.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 
 namespace Internal_API.data
@@ -13,6 +14,11 @@ namespace Internal_API.data
         public FileUploadDao(AppDbContext context)
         {
             dbContext = context;
+        }
+
+        public async Task saveChanges()
+        {
+            await dbContext.SaveChangesAsync();
         }
 
         public IQueryable<FileUpload> getQuery()
