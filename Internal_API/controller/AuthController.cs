@@ -67,6 +67,10 @@ namespace Internal_API.controller
             if (await userInfoDao.VerifyUserPassword(login))
             {
                 var user = await userInfoDao.GetUserByUsernameAsync(login.username);
+                if (login.userrole.ToLower().Contains("admin") && !user.userrole.ToLower().Contains("admin"))
+                {
+                    return Unauthorized("No admin access");
+                }
                 var token = _jwtService.GenerateToken(user);
                 return Ok(new { Token = token });
             }

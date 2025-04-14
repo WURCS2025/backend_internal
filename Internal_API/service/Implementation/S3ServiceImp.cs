@@ -9,7 +9,7 @@ namespace Internal_API.Services.Implementation
 {
     public class S3ServiceImp : IS3Service
     {
-        private IAmazonS3? _s3Client;
+        private IAmazonS3? s3Client;
         private string? _bucketName;
         private IConfiguration configuration;
 
@@ -19,14 +19,14 @@ namespace Internal_API.Services.Implementation
             _bucketName = configuration["AWS:BucketName"];
             if (s3Client != null)
             {
-                this._s3Client = s3Client;
+                this.s3Client = s3Client;
             }
             else if (!string.IsNullOrEmpty(_bucketName))
             {
                 var region = Amazon.RegionEndpoint.GetBySystemName(configuration["AWS:Region"]);
                 var accessKey = configuration["AWS:AccessKey"];
                 var secretKey = configuration["AWS:SecretKey"];
-                _s3Client = new AmazonS3Client(accessKey, secretKey, region);
+                this.s3Client = new AmazonS3Client(accessKey, secretKey, region);
             }
             
         }
@@ -59,7 +59,7 @@ namespace Internal_API.Services.Implementation
                     ContentType = MimeTypes.Text,
                 };
 
-                await _s3Client.PutObjectAsync(putRequest);
+                await s3Client.PutObjectAsync(putRequest);
                 fileInfo.S3Key = putRequest.Key;
                 return $"File uploaded successfully: {putRequest.Key}";
             }
@@ -81,7 +81,7 @@ namespace Internal_API.Services.Implementation
 
             try
             {
-                var file = await _s3Client.GetObjectAsync(_bucketName, s3key);
+                var file = await s3Client.GetObjectAsync(_bucketName, s3key);
                 return file;
             }
             catch(Exception ex)
@@ -92,6 +92,18 @@ namespace Internal_API.Services.Implementation
 
           
         }
+
+        public async Task DeleteFileAsync(string s3Key)
+        {
+            var deleteRequest = new Amazon.S3.Model.DeleteObjectRequest
+            {
+                BucketName = configuration["AWS:BucketName"],
+                Key = s3Key
+            };
+
+            await s3Client.DeleteObjectAsync(deleteRequest);
+        }
+
 
 
     }

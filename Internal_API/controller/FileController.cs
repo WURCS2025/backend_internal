@@ -6,6 +6,7 @@ using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Internal_API.model;
 using Internal_API.constants;
+using Internal_API.service;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -18,8 +19,9 @@ namespace Internal_API.Controllers
         private readonly IS3Service s3FileService;
         private readonly IConfiguration configuration;
         private readonly IFileUploadDao fileUploadDao;
+        private readonly IUserInfoDao userInfoDao;
 
-        public S3FileController(IConfiguration configuration, IFileUploadDao fileUploadDao)
+        public S3FileController(IConfiguration configuration, IFileUploadDao fileUploadDao, IUserInfoDao userInfoDao)
         {
             this.configuration = configuration;
             var region = Amazon.RegionEndpoint.GetBySystemName(configuration["AWS:Region"]);
@@ -28,6 +30,7 @@ namespace Internal_API.Controllers
             IAmazonS3 s3Client = new AmazonS3Client(accessKey, secretKey, region);
             s3FileService = new S3ServiceImp(configuration, s3Client);
             this.fileUploadDao = fileUploadDao;
+            this.userInfoDao = userInfoDao;
         }
 
         [HttpPost("upload")]
@@ -123,11 +126,19 @@ namespace Internal_API.Controllers
             }
 
             var query = fileUploadDao.getQuery();
-            
+            var userquery = userInfoDao.getQuery();
+
+
 
             // Apply filters
             if (!string.IsNullOrEmpty(filter.userid))
-                query = query.Where(f => f.userinfo == filter.userid);
+            {
+                var user = await userInfoDao.GetUserByUsernameAsync(filter.userid);
+                if (user.userrole == UserRoles.USER)
+                {
+                    query = query.Where(f => f.userinfo == filter.userid);
+                }
+            }
 
             if (!string.IsNullOrEmpty(filter.year) && !filter.year.ToLower().Contains("all") && int.TryParse(filter.year, out int myear))
                 query = query.Where(f => f.year == myear);
@@ -152,9 +163,45 @@ namespace Internal_API.Controllers
                     : query.OrderBy(e => EF.Property<object>(e, filter.sortfield));
             }
 
-            var result = await query.ToListAsync();
+            var joinedQuery = from f in query
+                              join u in userquery
+                              on f.userinfo equals u.username
+                              select f;
+
+            var result = await joinedQuery.ToListAsync();
             return result;
         }
+
+        [HttpDelete("{fileId}")]
+        public async Task<IActionResult> DeleteFile(string fileId)
+        {
+            if (!Guid.TryParse(fileId, out Guid fileGuid))
+            {
+                return BadRequest("Invalid file ID.");
+            }
+
+            var record = fileUploadDao.GetUploadById(fileGuid);
+            if (record == null)
+            {
+                return NotFound($"File with ID {fileId} not found.");
+            }
+
+            try
+            {
+                // Delete from S3
+                await s3FileService.DeleteFileAsync(record.s3_key);
+
+                // Delete from database
+                fileUploadDao.DeleteFileUpload(fileGuid);
+
+                return Ok(new { Message = $"File {record.filename} deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Error = $"Error deleting file: {ex.Message}" });
+            }
+        }
+
     }
 
 }

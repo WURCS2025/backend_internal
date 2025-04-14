@@ -12,11 +12,11 @@ using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
-{
-    serverOptions.ListenAnyIP(5200); // HTTP
-    serverOptions.ListenAnyIP(5201, listenOptions => listenOptions.UseHttps()); // HTTPS
-});
+//builder.WebHost.ConfigureKestrel(serverOptions =>
+//{
+//    serverOptions.ListenAnyIP(5200); // HTTP
+//    serverOptions.ListenAnyIP(5201, listenOptions => listenOptions.UseHttps()); // HTTPS
+//});
 
 //// Force the application to use the specified ports
 //builder.WebHost.UseUrls("http://+:8082", "https://+:8083");

@@ -6,9 +6,24 @@ namespace Internal_API.model
     [Table("UserInfo")]
     public class UserInfo
     {
+
+        public UserInfo(UserView userView) { 
+        
+           this.username = userView.username;
+           this.lastname = userView.lastname;
+           this.firstname = userView.firstname;
+           this.email = userView.email;
+            this.passwordhash = userView.password;
+            this.userrole = userView.userrole;
+        }
+
+        public UserInfo()
+        {
+
+        }
+
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid id { get; set; }
+        public Guid id { get; set; } = Guid.NewGuid();
 
         [Required]
         public string firstname { get; set; }
@@ -24,9 +39,14 @@ namespace Internal_API.model
         public string username { get; set; }
 
         [Required]
+        public string userrole { get; set; }
+
+        [Required]
         public string passwordhash { get; set; }
 
-        public DateTime createdate { get; set; }
+        public DateTime createdate { get; set; } = DateTime.UtcNow;
+
+
     }
 
 }

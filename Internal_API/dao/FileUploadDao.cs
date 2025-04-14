@@ -40,6 +40,30 @@ namespace Internal_API.data
             return dbContext.FileUploads.Where(a=>a.userinfo == user).ToList();
         }
 
+        public IList<FileUpload> GetFileUploadsWithUserInfo()
+        {
+            
+                var result = from f in dbContext.FileUploads
+                             join u in dbContext.UserInfo
+                             on f.userinfo equals u.username
+                             select f;
+
+                return result.ToList();
+            
+        }
+
+        // In FileUploadDao implementation
+        public void DeleteFileUpload(Guid fileId)
+        {
+            var file = dbContext.FileUploads.Find(fileId);
+            if (file != null)
+            {
+                dbContext.FileUploads.Remove(file);
+                dbContext.SaveChanges();
+            }
+        }
+
+
         public Guid SaveFileUpload(S3FileInfo fileInfo)
         {
             FileUpload upload = new FileUpload();
