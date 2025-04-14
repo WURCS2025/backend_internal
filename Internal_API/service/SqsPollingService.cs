@@ -7,6 +7,7 @@ using Internal_API.model;
 using Internal_API.Services;
 using Internal_API.data;
 using Internal_API.models;
+using Internal_API.constants;
 
 public class SqsPollingService : BackgroundService
 {
@@ -15,13 +16,15 @@ public class SqsPollingService : BackgroundService
     private readonly IConfiguration configuration;
     private readonly ILogger<SqsPollingService> _logger;
     private readonly string queueUrl;
-    public SqsPollingService(IAmazonSQS sqsClient, IMessagePushService pushService, IConfiguration configuration, ILogger<SqsPollingService> logger)
+    IServiceScopeFactory _scopeFactory;
+    public SqsPollingService(IAmazonSQS sqsClient, IMessagePushService pushService, IConfiguration configuration, ILogger<SqsPollingService> logger, IServiceScopeFactory scopeFactory)
     {
         _sqsClient = sqsClient;
         this.pushService = pushService;
         queueUrl = configuration["AWS:OutputDataSQSUrl"];
         this.configuration = configuration;
         _logger = logger;
+        this._scopeFactory = scopeFactory;
     }
 
 
@@ -52,6 +55,23 @@ public class SqsPollingService : BackgroundService
                     var messageJson = outer.RootElement.GetProperty("Message").GetString();
                     ProcessingResult result = JsonSerializer.Deserialize<ProcessingResult>(messageJson);
 
+                    using (var scope = _scopeFactory.CreateScope())
+                    {
+                        var fileUploadDao = scope.ServiceProvider.GetRequiredService<IFileUploadDao>();
+
+                        var fileupload = fileUploadDao.GetUploadById(new Guid(result.id));
+                        fileupload.status = result.process_result.ToUpper() switch
+                        {
+                            "SUCCESS" => Internal_API.constants.FileStatus.completed,
+                            "FAILURE" => Internal_API.constants.FileStatus.error,
+                            _ => fileupload.status
+                        };
+
+                        fileupload.message = result.message;
+
+                        await fileUploadDao.saveChanges();
+                    }
+
                     // 👈 Your logic to get file ID from the SQS message
                     var payload = new
                     {
@@ -75,7 +95,7 @@ public class SqsPollingService : BackgroundService
 
                     var json = JsonSerializer.Serialize(payload);
 
-                    System.Threading.Thread.Sleep(15000);
+                    System.Threading.Thread.Sleep(5000);
 
                     await pushService.PushAsync(json); // 👈 Push structured message
                     await _sqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle);
@@ -86,6 +106,12 @@ public class SqsPollingService : BackgroundService
         {
             _logger.LogError(ex, "Error while polling SQS.");
         }
+    }
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Stopping SqsPollingService...");
+        await base.StopAsync(cancellationToken);
     }
 }
 
