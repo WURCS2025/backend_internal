@@ -47,7 +47,7 @@ namespace Internal_API.Tests
             {
                 file = _mockFile.Object,
                 fileName = "test.jpg",
-                type = "image/jpeg",
+                filetype = "image/jpeg",
                 userInfo = "user123",
                 year = 2024
             };
@@ -67,7 +67,7 @@ namespace Internal_API.Tests
             {
                 file = null,
                 fileName = "waybill.txt",
-                type = "txt",
+                filetype = "txt",
                 userInfo = "user123",
                 year = 2024
             };
@@ -89,7 +89,7 @@ namespace Internal_API.Tests
             {
                 file = _mockFile.Object,
                 fileName = "testfile.txt",
-                type = "text/plain",
+                filetype = "text/plain",
                 year = 2024
             };
 
@@ -117,7 +117,7 @@ namespace Internal_API.Tests
             {
                 file = _mockFile.Object,
                 fileName = "testfile.txt",
-                type = "text/plain",
+                filetype = "text/plain",
                 year = 2024
             };
 

@@ -47,21 +47,24 @@ namespace Internal_API.Tests
         }
 
         [TestMethod]
-        public async Task Login_ValidCredentials_ReturnsOkWithToken()
+        public async Task Login_ValidCredentials_ReturnsToken()
         {
-            var login = new Login { username = "validuser", password = "validpassword" };
-            var user = new UserInfo { username = "validuser" };
+            var login = new Login { username = "test", userrole = "user" };
+            var user = new UserInfo { username = "test", userrole = "user" };
 
             mockUserInfoDao.Setup(x => x.VerifyUserPassword(login)).ReturnsAsync(true);
             mockUserInfoDao.Setup(x => x.GetUserByUsernameAsync(login.username)).ReturnsAsync(user);
-            mockJwtTokenService.Setup(x => x.GenerateToken(user)).Returns("testtoken");
+            mockJwtTokenService.Setup(x => x.GenerateToken(user)).Returns("mock-token");
 
-            var result = await authController.Login(login) as OkObjectResult;
+            var result = await authController.Login(login);
 
-            Assert.IsNotNull(result);
-            Assert.IsTrue(result.Value.GetType().GetProperty("Token") != null);
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            var tokenProperty = okResult.Value.GetType().GetProperty("Token");
+            var tokenValue = tokenProperty?.GetValue(okResult.Value)?.ToString();
+
+            Assert.AreEqual("mock-token", tokenValue);
         }
-
         [TestMethod]
         public async Task Login_InvalidCredentials_ReturnsUnauthorized()
         {

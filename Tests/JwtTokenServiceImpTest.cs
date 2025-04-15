@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Internal_API.service.Implementation;
 using Internal_API.model;
+using Internal_API.constants;
 
 namespace Internal_API.Tests
 {
@@ -30,7 +31,8 @@ namespace Internal_API.Tests
             var user = new UserInfo
             {
                 username = "testuser",
-                email = "testuser@example.com"
+                email = "testuser@example.com",
+                userrole = "user"
             };
 
             // Act

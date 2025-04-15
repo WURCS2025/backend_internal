@@ -29,6 +29,7 @@ namespace Internal_API.controller
             finally
             {
                 pushService.Unregister(client);
+                client.Dispose();
             }
         }
     }

@@ -95,7 +95,7 @@ public class SqsPollingService : BackgroundService
 
                     var json = JsonSerializer.Serialize(payload);
 
-                    System.Threading.Thread.Sleep(5000);
+                    System.Threading.Thread.Sleep(3000);
 
                     await pushService.PushAsync(json); // 👈 Push structured message
                     await _sqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle);
