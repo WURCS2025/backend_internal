@@ -46,34 +46,32 @@ namespace Internal_API_Test
             public async Task Get_ShouldRegisterAndUnregisterClient()
             {
                 // Arrange
-                var registered = false;
-                var unregistered = false;
+                var registeredClient = (SseClientImpl)null;
 
-                // Override IMessagePushService.Register to capture the client
-                SseClientImpl capturedClient = null;
                 mockPushService.Setup(s => s.Register(It.IsAny<SseClientImpl>()))
-                               .Callback<SseClientImpl>(client =>
-                               {
-                                   registered = true;
-                                   capturedClient = client;
-                               });
+                               .Callback<SseClientImpl>(client => registeredClient = client);
 
                 mockPushService.Setup(s => s.Unregister(It.IsAny<SseClientImpl>()))
-                               .Callback(() => unregistered = true);
+                               .Callback<SseClientImpl>(client =>
+                               {
+                                   Assert.AreEqual(registeredClient, client);
+                               });
 
-                // Override ListenAsync to simulate short-lived connection
-                var listenTask = Task.CompletedTask;
-                var clientImplMock = new Mock<SseClientImpl>(controller.Response) { CallBase = true };
-                clientImplMock.Setup(c => c.ListenAsync(It.IsAny<CancellationToken>())).Returns(listenTask);
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(100); // cancel quickly to exit ListenAsync
+
+                // Override HttpContext.RequestAborted
+                controller.ControllerContext.HttpContext.RequestAborted = cts.Token;
 
                 // Act
                 await controller.Get();
 
                 // Assert
-                Assert.IsTrue(registered);
-                Assert.IsTrue(unregistered);
+                mockPushService.Verify(s => s.Register(It.IsAny<SseClientImpl>()), Times.Once);
+                mockPushService.Verify(s => s.Unregister(It.IsAny<SseClientImpl>()), Times.Once);
             }
+
         }
     }
 
-}
+    }
