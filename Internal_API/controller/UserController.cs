@@ -69,9 +69,9 @@ namespace Internal_API.controller
         {
             var user = await userInfoDao.GetUserByUsernameAsync(username);
 
-            if (user.userrole.ToLower() != UserRoles.ADMIN)
+            if (user.userrole.ToLower() == UserRoles.USER)
             {
-                return BadRequest("Only admin or managers can see user list");
+                return BadRequest("Only admin or analysts can see user list");
             }
 
             var userList = await userInfoDao.GetUserList();

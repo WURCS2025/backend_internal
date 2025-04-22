@@ -25,8 +25,6 @@ namespace Internal_API.models
             optionsBuilder.UseNpgsql(connectionString);
         }
 
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FileUpload>().ToTable("FileUpload");

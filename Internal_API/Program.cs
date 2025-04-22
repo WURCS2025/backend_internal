@@ -39,6 +39,16 @@ builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
 builder.Services.AddAWSService<IAmazonSQS>();
 builder.Services.AddSingleton<IMessagePushService, MessagePushServiceImpl>(); // Your SSE message broker
 builder.Services.AddHostedService<SqsPollingService>(); // ✅ This starts the polling service
+builder.Services.AddHttpClient("UnsafeClient")
+    .ConfigurePrimaryHttpMessageHandler(() =>
+        new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            AllowAutoRedirect = true
+        });
+
+
+builder.Services.AddEndpointsApiExplorer();
 
 
 // ? Step 1: Define the CORS Policy
