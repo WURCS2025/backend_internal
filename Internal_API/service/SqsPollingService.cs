@@ -30,83 +30,93 @@ public class SqsPollingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Polling SQS...");
+        _logger.LogInformation("Starting SQS Polling Service...");
 
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
                 var request = new ReceiveMessageRequest
                 {
                     QueueUrl = queueUrl,
                     MaxNumberOfMessages = 5,
-                    WaitTimeSeconds = 15
+                    WaitTimeSeconds = 20, // Long polling
+                    VisibilityTimeout = 60
                 };
 
                 var response = await _sqsClient.ReceiveMessageAsync(request, stoppingToken);
 
+                if (response.Messages.Count == 0)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // Wait a bit before polling again
+                    continue;
+                }
+
                 foreach (var message in response.Messages)
                 {
-                    var rawSqsMessage = message.Body;
-
-                    _logger.LogInformation($"Received SQS message: {rawSqsMessage}");
-
-                    var outer = JsonDocument.Parse(rawSqsMessage); // rawSqsMessage = msg.Body
-                    var messageJson = outer.RootElement.GetProperty("Message").GetString();
-                    ProcessingResult result = JsonSerializer.Deserialize<ProcessingResult>(messageJson);
-
-                    using (var scope = _scopeFactory.CreateScope())
+                    try
                     {
-                        var fileUploadDao = scope.ServiceProvider.GetRequiredService<IFileUploadDao>();
+                        var rawSqsMessage = message.Body;
+                        _logger.LogInformation($"Received SQS message: {rawSqsMessage}");
 
-                        var fileupload = fileUploadDao.GetUploadById(new Guid(result.id));
-                        fileupload.status = result.process_result.ToUpper() switch
+                        var outer = JsonDocument.Parse(rawSqsMessage);
+                        var messageJson = outer.RootElement.GetProperty("Message").GetString();
+                        var result = JsonSerializer.Deserialize<ProcessingResult>(messageJson);
+
+                        using (var scope = _scopeFactory.CreateScope())
                         {
-                            "SUCCESS" => Internal_API.constants.FileStatus.completed,
-                            "FAILURE" => Internal_API.constants.FileStatus.error,
-                            _ => fileupload.status
+                            var fileUploadDao = scope.ServiceProvider.GetRequiredService<IFileUploadDao>();
+                            var fileupload = fileUploadDao.GetUploadById(result.id);
+
+                            if (fileupload != null)
+                            {
+                                fileupload.status = result.process_result.ToUpper() switch
+                                {
+                                    "SUCCESS" => FileStatus.completed.ToString(),
+                                    "FAILURE" => FileStatus.error.ToString(),
+                                    _ => fileupload.status
+                                };
+                                fileupload.message = result.message;
+                                await fileUploadDao.saveChanges();
+                            }
+                        }
+
+                        var payload = new
+                        {
+                            id = result.id,
+                            message = result.message,
+                            result = result.process_result
                         };
 
-                        fileupload.message = result.message;
+                        var json = JsonSerializer.Serialize(payload);
 
-                        await fileUploadDao.saveChanges();
+                        await Task.Delay(3000, stoppingToken); // Replace Thread.Sleep
+
+                        await pushService.PushAsync(json);
+                        await _sqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle, stoppingToken);
                     }
-
-                    // 👈 Your logic to get file ID from the SQS message
-                    var payload = new
+                    catch (Exception ex)
                     {
-                        id = result.id,
-
-                        message = result.message,
-                        result = result.process_result
-                    };
-
-                    //var fileupload = fileUploadDao.GetUploadById(new Guid(result.id));
-
-                    //if (result.process_result.ToUpper().Contains("SUCCESS"))
-                    //{
-                    //    fileupload.status = Internal_API.constants.FileStatus.completed;
-                    //}
-                    //else
-                    //{
-                    //    fileupload.status = Internal_API.constants.FileStatus.error;
-                    //}
-                    //await fileUploadDao.saveChanges();
-
-                    var json = JsonSerializer.Serialize(payload);
-
-                    System.Threading.Thread.Sleep(3000);
-
-                    await pushService.PushAsync(json); // 👈 Push structured message
-                    await _sqsClient.DeleteMessageAsync(queueUrl, message.ReceiptHandle);
+                        _logger.LogError(ex, "Error processing individual SQS message.");
+                        // Optionally move to DLQ or log for re-processing
+                    }
                 }
             }
+            catch (TaskCanceledException)
+            {
+                // Expected on shutdown
+                break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in SQS polling loop.");
+                await Task.Delay(5000, stoppingToken); // Avoid hot loop on repeated failures
+            }
         }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, "Error while polling SQS.");
-        }
+
+        _logger.LogInformation("SQS Polling Service stopped.");
     }
+
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {

@@ -3,6 +3,8 @@
     public class FileFilterRequest
     {
         public string? userid { get; set; }
+
+        public string? byuser { get; set; }
         public string? year { get; set; }
         public string? filetype { get; set; }
         public string? category { get; set; }

@@ -45,12 +45,12 @@ namespace Internal_API_Test
             public async Task SendMessage_ValidFileId_PublishesMessageAndUpdatesStatus()
             {
                 // Arrange
-                var fileId = Guid.NewGuid();
+                var fileId = Guid.NewGuid().ToString();
                 var fileUpload = new FileUpload
                 {
                     id = fileId,
                     filename = "testfile.txt",
-                    status = FileStatus.uploaded
+                    status = FileStatus.uploaded.ToString()
                 };
 
                 mockFileUploadDao.Setup(dao => dao.GetUploadById(fileId)).Returns(fileUpload);
@@ -63,7 +63,7 @@ namespace Internal_API_Test
                 // Assert
                 Assert.IsInstanceOfType(result, typeof(OkObjectResult));
                 var okResult = result as OkObjectResult;
-                Assert.AreEqual(FileStatus.processing, ((FileUpload)okResult.Value).status);
+                Assert.AreEqual(FileStatus.processing.ToString(), ((FileUpload)okResult.Value).status);
 
                 mockSnsClient.Verify(sns => sns.PublishAsync(It.IsAny<PublishRequest>(), default), Times.Once);
                 mockFileUploadDao.Verify(dao => dao.saveChanges(), Times.Once);
@@ -73,7 +73,7 @@ namespace Internal_API_Test
             public async Task SendMessage_InvalidFileId_ReturnsBadRequest()
             {
                 // Arrange
-                var fileId = Guid.NewGuid();
+                var fileId = Guid.NewGuid().ToString();
                 mockFileUploadDao.Setup(dao => dao.GetUploadById(fileId)).Returns((FileUpload)null);
 
                 // Act

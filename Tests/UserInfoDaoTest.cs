@@ -30,9 +30,9 @@ namespace Internal_API.Tests
             var storedhash = passwordNotHashed.HashPassword();
             userInfoList = new List<UserInfo>
         {
-            new UserInfo { id = new Guid(), username = "testuser1", passwordhash = "hashedpassword1" },
-            new UserInfo { id = new Guid(), username = "testuser2", passwordhash = "hashedpassword2" },
-            new UserInfo { id = new Guid(), username = "testuser3", passwordhash = storedhash }
+            new UserInfo { id = new Guid().ToString(), username = "testuser1", passwordhash = "hashedpassword1" },
+            new UserInfo { id = new Guid().ToString(), username = "testuser2", passwordhash = "hashedpassword2" },
+            new UserInfo { id = new Guid().ToString(), username = "testuser3", passwordhash = storedhash }
         };
 
             mockDbSet = userInfoList.AsQueryable().BuildMockDbSet();
@@ -53,7 +53,7 @@ namespace Internal_API.Tests
         public async Task CreateUserAsync_ValidUser_AddsUserToDatabase()
         {
             // Arrange
-            var user = new UserInfo { id = new Guid(), username = "testuser3", passwordhash = "hashedpassword3" };
+            var user = new UserInfo { id = new Guid().ToString(), username = "testuser3", passwordhash = "hashedpassword3" };
 
             // Act
             await userInfoDao.CreateUserAsync(user);
@@ -67,7 +67,7 @@ namespace Internal_API.Tests
         public async Task DeleteUserAsync_ExistingUser_RemovesUserFromDatabase()
         {
             // Arrange
-            var user = new UserInfo { id = new Guid(), username = "testuser" };
+            var user = new UserInfo { id = new Guid().ToString(), username = "testuser" };
             var users = new List<UserInfo> { user }.AsQueryable();
             mockDbSet.As<IQueryable<UserInfo>>().Setup(m => m.Provider).Returns(users.Provider);
             mockDbSet.As<IQueryable<UserInfo>>().Setup(m => m.Expression).Returns(users.Expression);

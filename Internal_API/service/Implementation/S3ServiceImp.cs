@@ -60,7 +60,7 @@ namespace Internal_API.Services.Implementation
                 };
 
                 await s3Client.PutObjectAsync(putRequest);
-                fileInfo.S3Key = putRequest.Key;
+                fileInfo.s3key = putRequest.Key;
                 return $"File uploaded successfully: {putRequest.Key}";
             }
             catch (Exception ex)

@@ -1,15 +1,32 @@
-﻿namespace Internal_API.models
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace Internal_API.models
 {
     public class S3FileInfo
     {
-        public IFormFile file { get; set; }  // File to be uploaded
-        public string fileName { get; set; } // Name of the file
-        public string filetype { get; set; }     // File type (e.g., image/png)
-        public string userInfo { get; set; } // User-related metadata
-        public int year { get; set; }        // Associated year
+        [FromForm(Name = "file")]
+        public IFormFile file { get; set; }
+
+        [FromForm(Name = "fileName")]
+        public string fileName { get; set; }
+
+        [FromForm(Name = "filetype")]
+        public string filetype { get; set; }
+
+        // If optional, keep it nullable to avoid auto-400; or keep int and ensure client always sends a number
+        [FromForm(Name = "year")]
+        public int? year { get; set; }
+
+        [FromForm(Name = "category")]
         public string category { get; set; }
 
-        public string S3Key { get; set; }
+        // If you only need a string, keep it string. If it's complex, don't bind it here—see note below.
+        [FromForm(Name = "userInfo")]
+        public string userInfo { get; set; }
+
+        [FromForm(Name = "s3key")]
+        public string s3key { get; set; }
     }
 
 }
+

@@ -105,13 +105,13 @@ namespace Internal_API.Tests
         public void GetStatus_ReturnsFileUpload_WhenExists()
         {
             // Arrange
-            var testGuid = Guid.NewGuid();
+            var testGuid = Guid.NewGuid().ToString();
             var testFileUpload = new FileUpload
             {
                 id = testGuid,
                 filename = "testfile.txt",
                 s3_key = "s3/testfile.txt",
-                status = FileStatus.uploaded
+                status = FileStatus.uploaded.ToString()
             };
 
             _mockFileUploadDao.Setup(f => f.GetUploadById(testGuid)).Returns(testFileUpload);
@@ -124,7 +124,7 @@ namespace Internal_API.Tests
             Assert.AreEqual(testGuid, result.id);
             Assert.AreEqual("testfile.txt", result.filename);
             Assert.AreEqual("s3/testfile.txt", result.s3_key);
-            Assert.AreEqual(FileStatus.uploaded, result.status);
+            Assert.AreEqual(FileStatus.uploaded.ToString(), result.status);
         }
 
         // ✅ TEST: GetStatus should return null when file is not found
@@ -132,7 +132,7 @@ namespace Internal_API.Tests
         public void GetStatus_ReturnsNull_WhenFileNotFound()
         {
             // Arrange
-            var testGuid = Guid.NewGuid();
+            var testGuid = Guid.NewGuid().ToString();
             _mockFileUploadDao.Setup(f => f.GetUploadById(testGuid)).Returns((FileUpload)null);
 
             // Act

@@ -1,18 +1,28 @@
-﻿namespace Internal_API.model
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+
+namespace Internal_API.model
 {
-    public class SendMessage
+    [Table("message", Schema = "public")]
+    public class SentMessage
     {
-        string fileId {  get; set; }
+        [Key]
+        [MaxLength(36)]
+        public string Id { get; set; }
 
-        public string fileName { get; set; }
+        [Required]
+        [MaxLength(36)]
+        public string FileId { get; set; }
 
-        public string s3_key { set; get; }
+        [Required]
+        public string MessageText { get; set; }
 
-        public string category { set; get; }
+        [Required]
+        public string Sender { get; set; }
 
-        public string filetype { set; get; }
+        [Required]
+        public string Receiver { get; set; }
 
-        public bool isUpdate { set; get; }
-
+        public DateTime? Date { get; set; }
     }
 }

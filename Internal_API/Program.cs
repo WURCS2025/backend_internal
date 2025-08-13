@@ -9,6 +9,9 @@ using Internal_API.Services.Implementation;
 using Microsoft.EntityFrameworkCore;
 using Amazon.SimpleNotificationService;
 using Amazon.SQS;
+using Amazon;
+using Internal_API.model;
+using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +39,20 @@ builder.Services.AddScoped<IFileUploadDao, FileUploadDao>();
 builder.Services.AddScoped<IUserInfoDao, UserInfoDao>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenServiceImp>();
 builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
-builder.Services.AddAWSService<IAmazonSQS>();
+builder.Services.AddSingleton<IAmazonSQS>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var awsOptions = AwsOptions.readFromEnv();
+
+    var sqsConfig = new AmazonSQSConfig
+    {
+        RegionEndpoint = RegionEndpoint.GetBySystemName(awsOptions.Region)
+    };
+
+
+    return new AmazonSQSClient(awsOptions.AccessKeyId, awsOptions.SecretAccessKey, sqsConfig);
+});
+//builder.Services.AddAWSService<IAmazonSQS>();
 builder.Services.AddSingleton<IMessagePushService, MessagePushServiceImpl>(); // Your SSE message broker
 builder.Services.AddHostedService<SqsPollingService>(); // ✅ This starts the polling service
 builder.Services.AddHttpClient("UnsafeClient")
@@ -54,24 +70,32 @@ builder.Services.AddEndpointsApiExplorer();
 // ? Step 1: Define the CORS Policy
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy =>
-        {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        });
-
-    
+    options.AddPolicy("AllowLocal", p => p
+        .WithOrigins("http://localhost:5173", "https://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()); // only if you actually use cookies
 });
 
-builder.Services.AddControllers();
+//builder.Services.AddControllers();
+
+//builder.Services.AddControllers(options =>
+//{
+//    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+//});
+
+builder.Services.AddControllers().ConfigureApiBehaviorOptions(o =>
+{
+    o.SuppressModelStateInvalidFilter = true; // <-- disable auto 400 for debugging
+
+});
 
 // ? Step 2: Enable CORS Before Mapping Controllers
 
 var app = builder.Build();
 
 app.UseCors("AllowAll");
+app.UseCors("AllowLocal");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

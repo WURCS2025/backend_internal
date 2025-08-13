@@ -38,7 +38,7 @@ namespace Internal_API.Tests
         [TestMethod]
         public void InsertARecord()
         {
-            FileUpload testRecord = new FileUpload { id = Guid.NewGuid(), filename = "file1.pdf", year = 2023, s3_key = GenerateRandomText(12) };
+            FileUpload testRecord = new FileUpload { id = Guid.NewGuid().ToString(), filename = "file1.pdf", year = 2023, s3_key = GenerateRandomText(12) };
             using (context = new MyDbContext())
             {
                 context.FileUploads.Add(testRecord);

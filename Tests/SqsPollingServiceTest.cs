@@ -66,12 +66,12 @@ namespace Internal_API_Test
 
             var fakeFile = new FileUpload
             {
-                id = Guid.Parse(processingResult.id),
-                status = FileStatus.processing,
+                id = processingResult.id,
+                status = FileStatus.processing.ToString(),
                 message = ""
             };
 
-            _mockFileUploadDao.Setup(d => d.GetUploadById(It.IsAny<Guid>()))
+            _mockFileUploadDao.Setup(d => d.GetUploadById(It.IsAny<string>()))
                               .Returns(fakeFile);
 
             _mockServiceProvider.Setup(sp => sp.GetService(typeof(IFileUploadDao)))

@@ -34,7 +34,7 @@ namespace Internal_API.data
             return dbContext.FileUploads.Where(a=>a.year == year).ToList();
         }
 
-        public FileUpload? GetUploadById(Guid id)
+        public FileUpload? GetUploadById(string id)
         { 
             var result = dbContext.FileUploads.FirstOrDefault(a=>a.id == id);
 
@@ -61,7 +61,7 @@ namespace Internal_API.data
         // In FileUploadDao implementation
         public void DeleteFileUpload(Guid fileId)
         {
-            var file = dbContext.FileUploads.Find(fileId);
+            var file = dbContext.FileUploads.Find(fileId.ToString());
             if (file != null)
             {
                 dbContext.FileUploads.Remove(file);
@@ -70,17 +70,18 @@ namespace Internal_API.data
         }
 
 
-        public Guid SaveFileUpload(S3FileInfo fileInfo)
+        public string SaveFileUpload(S3FileInfo fileInfo)
         {
             FileUpload upload = new FileUpload();
             upload.filename = fileInfo.fileName;
             upload.category = fileInfo.category;
-            upload.s3_key = fileInfo.S3Key;
-            upload.status = FileStatus.uploaded;
+            upload.s3_key = fileInfo.s3key;
+            upload.status = FileStatus.uploaded.ToString();
             upload.userinfo = fileInfo.userInfo;
-            upload.year = fileInfo.year;
+            upload.year = fileInfo.year ?? throw new ArgumentNullException(nameof(fileInfo.year));
             upload.filetype = fileInfo.filetype;
             upload.message = "uploading completed";
+            upload.id = Guid.NewGuid().ToString();;
             dbContext.FileUploads.Add(upload);
             dbContext.SaveChanges();
             return upload.id;

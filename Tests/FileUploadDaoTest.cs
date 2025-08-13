@@ -26,9 +26,9 @@ namespace Internal_API.Tests
 
             fileUploads = new List<FileUpload>
         {
-            new FileUpload { id = Guid.NewGuid(), filename = "file1.pdf", year = 2023 },
-            new FileUpload { id = Guid.NewGuid(), filename = "file2.pdf", year = 2023 },
-            new FileUpload { id = Guid.NewGuid(), filename = "file3.pdf", year = 2024 }
+            new FileUpload { id = Guid.NewGuid().ToString(), filename = "file1.pdf", year = 2023 },
+            new FileUpload { id = Guid.NewGuid().ToString(), filename = "file2.pdf", year = 2023 },
+            new FileUpload { id = Guid.NewGuid().ToString(), filename = "file3.pdf", year = 2024 }
         };
 
             mockDbSet = new Mock<DbSet<FileUpload>>();
@@ -67,7 +67,7 @@ namespace Internal_API.Tests
         [TestMethod]
         public void SaveFileUpload_ShouldAddFileUploadToDatabase()
         {
-            var fileInfo = new S3FileInfo { fileName = "file4.pdf", category = "docs", S3Key = "s3key", userInfo = "user1", year = 2025 };
+            var fileInfo = new S3FileInfo { fileName = "file4.pdf", category = "docs", s3key = "s3key", userInfo = "user1", year = 2025 };
             mockDbSet.Setup(m => m.Add(It.IsAny<FileUpload>())).Callback<FileUpload>(f => fileUploads.Add(f));
 
             var result = fileUploadDao.SaveFileUpload(fileInfo);

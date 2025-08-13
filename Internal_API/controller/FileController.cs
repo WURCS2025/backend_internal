@@ -12,6 +12,7 @@ using Internal_API.service;
 
 namespace Internal_API.Controllers
 {
+    [IgnoreAntiforgeryToken]
     [Route("api/[controller]")]
     [ApiController]
     public class S3FileController : ControllerBase
@@ -36,11 +37,16 @@ namespace Internal_API.Controllers
         [HttpPost("upload")]
         public async Task<IActionResult> UploadFile([FromForm] S3FileInfo fileInfo)
         {
+
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState); // <-- you’ll now see the exact binder errors
+
             try
             {
                 var temp = fileInfo.fileName;
                 fileInfo.fileName = fileInfo.file.FileName;
                 var result = await s3FileService.UploadFileAsync(fileInfo);
+                
                 var id = this.fileUploadDao.SaveFileUpload(fileInfo);
                 return Ok(new { Message = result  + "file id = " + id });
             }
@@ -51,7 +57,7 @@ namespace Internal_API.Controllers
         }
 
         [HttpGet("status")]
-        public FileUpload? GetStatus(Guid id)
+        public FileUpload? GetStatus(string id)
         {
             return fileUploadDao.GetUploadById(id);
             
@@ -75,7 +81,7 @@ namespace Internal_API.Controllers
                 return NotFound("Invalid GUID format. {fileId}");
             }
 
-            var record = fileUploadDao.GetUploadById(fileGuiID);
+            var record = fileUploadDao.GetUploadById(fileId);
 
             if (record is null)
             {
@@ -138,6 +144,12 @@ namespace Internal_API.Controllers
                 }
             }
 
+            if (!string.IsNullOrEmpty(filter.byuser))            
+            {
+                
+                query = query.Where(f => f.userinfo == filter.byuser);                
+            }
+
             if (!string.IsNullOrEmpty(filter.year) && !filter.year.ToLower().Contains("all") && int.TryParse(filter.year, out int myear))
                 query = query.Where(f => f.year == myear);
 
@@ -150,7 +162,7 @@ namespace Internal_API.Controllers
             if (!string.IsNullOrEmpty(filter.status) &&
                 Enum.TryParse<FileStatus>(filter.status, true, out var fileStatus) && !filter.status.ToLower().Contains("all"))
             {
-                query = query.Where(f => f.status == fileStatus);
+                query = query.Where(f => f.status == fileStatus.ToString());
             }
 
             // Apply sorting
@@ -162,11 +174,11 @@ namespace Internal_API.Controllers
             }
 
             var joinedQuery = from f in query
-                              join u in userquery
-                              on f.userinfo equals u.username
+                                  //join u in userquery
+                                  //on f.userinfo equals u.username
                               select f;
 
-            var result = await joinedQuery.ToListAsync();
+            var result = await query.ToListAsync();
             return result;
         }
 
@@ -178,7 +190,7 @@ namespace Internal_API.Controllers
                 return BadRequest("Invalid file ID.");
             }
 
-            var record = fileUploadDao.GetUploadById(fileGuid);
+            var record = fileUploadDao.GetUploadById(fileId);
             if (record == null)
             {
                 return NotFound($"File with ID {fileId} not found.");

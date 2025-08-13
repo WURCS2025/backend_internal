@@ -33,7 +33,7 @@ namespace Internal_API.controller
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] string fileid)
         {
-            var fileupload = fileUploadDao.GetUploadById(new Guid(fileid));
+            var fileupload = fileUploadDao.GetUploadById(fileid);
 
 
             if (fileupload != null)
@@ -47,7 +47,7 @@ namespace Internal_API.controller
 
                 await snsClient.PublishAsync(publishRequest);
 
-                fileupload.status = FileStatus.processing;
+                fileupload.status = FileStatus.processing.ToString();
                 await fileUploadDao.saveChanges();
                 return Ok(fileupload);
             }
